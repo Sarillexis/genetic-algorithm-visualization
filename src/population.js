@@ -24,31 +24,31 @@ class Population {
     }
     // console.log('CURRENT POPULATION: ', this.currentGen)
     this.fittestEver = this.getFittest();
+  
+  selectParentTournament(k = 3) {
+    // pick the best out of k random individuals
+    let best = null;
+    for (let i = 0; i < k; i++) {
+      const candidate = this.currentGen[Math.floor(Math.random() * this.currentGen.length)];
+      if (!best || candidate.fitness > best.fitness) {
+        best = candidate;
+      }
+    }
+    return best;
   }
 
   createNextGen() {
     let nextGen = [];
     if (this.elitismRate) nextGen = nextGen.concat(this.passElites());
     // console.log('next generation elites: ', nextGen);
-    let matingPair = [];
     while (nextGen.length < this.popSize) {
-      let fitnessThreshold = Math.random() * this.totalFitness;
-      let currentFitness = 0;
-      let individuals = this.currentGen.shuffle();
-      for (let i = 0; i < individuals.length; i++) {
-        currentFitness += individuals[i].fitness;
-        if (currentFitness >= fitnessThreshold) {
-          matingPair.push(individuals[i]);
-          if (matingPair.length === 2) {
-            let newChildren = matingPair[0].mate(this.crossProb, this.mutProb, matingPair[1]);
-            nextGen = nextGen.concat(newChildren);
-            matingPair = [];
-            // console.log('growing next generation: ', nextGen)
-          }
-          break;
-        }
-      }
+      const parent1 = this.selectParentTournament(3); // k = 3 is a good start
+      const parent2 = this.selectParentTournament(3);
+
+      const newChildren = parent1.mate(this.crossProb, this.mutProb, parent2);
+      nextGen = nextGen.concat(newChildren);
     }
+
     // console.log('complete next generation: ', nextGen);
     this.currentGen = nextGen;
     this.genNumber += 1
