@@ -18,16 +18,88 @@
     <!-- <h1 class='app-title'>Solving the Traveling Salesman Problem with a Genetic Algorithm</h1> -->
     <h1 class='app-title'>Applying Genetic Algorithms to the Traveling Salesman Problem</h1>
 
-    <div class='route-displays'>
-      <div class='generation-fittest'>
-        <h2 class='canvas-label'>Shortest route in current generation</h2>
-        <canvas width=600 height=500 id="canvas"></canvas>
-      </div>
-      <div class='right-display'>
-        <div class='overall-fittest'>
-          <h2 class='canvas-label'>Shortest route found</h2>
-          <canvas width=300 height=250 id='fittest'></canvas>
+    <div class='main-canvas-container'>
+      <h2 class='canvas-label'>Shortest route in current generation</h2>
+      <canvas width=600 height=500 id="canvas"></canvas>
+    </div>
+
+    <div class='controls-stats'>
+      <div class='controls-column'>
+        <div class='controls'>
+          <div class='algo-options'>
+            <h2 class='params-title'>Algorithm Parameters</h2>
+            <div class='param-item-container'>
+              <div class='param-item-label'>
+                <div>Population size</div>
+                <!-- <img class='question-circle' src='../images/question-circle.svg' alt='?'> -->
+              </div>
+              <div class='param-input'>
+                <input id='popsize-slider' type='range' min='0' max='2000' step='25' value='500'>
+                <div class='param-value-container'>
+                  <label class='param-value' for='popsize-slider' id='popsize-label'></label>
+                </div>
+              </div>
+            </div>
+            <div class='param-item-container'>
+              <div class='param-item-label'>
+                <div>Mutation rate</div>
+                <!-- <img class='question-circle' src='../images/question-circle.svg' alt='?'> -->
+              </div>
+              <div class='param-input'>
+                <input id='mutation-slider' type='range' min='0' max='1' step='0.01' value='0.05'>
+                <div class='param-value-container'>
+                  <label class='param-value' for='mutation-slider' id='mutation-label'></label>
+                </div>
+              </div>
+            </div>
+            <div class='param-item-container'>
+              <div class='param-item-label'>
+                <div>Crossover rate</div>
+                <!-- <img class='question-circle' src='../images/question-circle.svg' alt='?'> -->
+              </div>
+              <div class='param-input'>
+                <input id='cross-slider' type='range' min='0' max='1' step='0.01' value='0.3'>
+                <div class='param-value-container'>
+                  <label class='param-value' for='cross-slider' id='cross-label'></label>
+                </div>
+              </div>
+            </div>
+            <div class='param-item-container'>
+              <div class='param-item-label'>
+                <div>Elitism</div>
+                <!-- <img class='question-circle' src='../images/question-circle.svg' alt='?'> -->
+              </div>
+              <div class='param-input'>
+                <input id='elitism-slider' type='range' min='0' max='1' step='0.01' value='0'>
+                <div class='param-value-container'>
+                  <label class='param-value' for='elitism-slider' id='elitism-label'></label>
+                </div>
+              </div>
+            </div>
+            <!-- <div class='param-item-container'>
+              <div>Elitism</div>
+              <img class='question-circle' src='../images/question-circle.svg'>
+              <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider round"></span>
+              </label>
+            </div> -->
+            <p class='algo-options-explanation'>
+              An explanation of the algorithm parameters and implementation can be found
+                <a href='https://github.com/abelchiao/genetic-algorithm-visualization#algorithm-implementation' target='_blank'>
+                  here
+                </a>.
+            </p>
+          </div>
+          <div class='control-buttons-container'>
+            <button id='start'>Start/Resume</button>
+            <button id='stop'>Pause</button>
+            <button id='reset'>Reset</button>
+            <button id='clear'>Clear</button>
+          </div>
         </div>
+      </div>
+      <div class='stats-column'>
         <div class='run-info'>
           <div class='run-metric-item'>
             <div class='run-metric-label'>Starting distance:</div>
@@ -50,91 +122,15 @@
             <div id='individuals-screened'></div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class='below-canvases'>
-      <div class='controls'>
-        <div class='algo-options'>
-          <h2 class='params-title'>Algorithm Parameters</h2>
-          <div class='param-item-container'>
-            <div class='param-item-label'>
-              <div>Population size</div>
-              <!-- <img class='question-circle' src='../images/question-circle.svg' alt='?'> -->
-            </div>
-            <div class='param-input'>
-              <input id='popsize-slider' type='range' min='0' max='2000' step='25' value='500'>
-              <div class='param-value-container'>
-                <label class='param-value' for='popsize-slider' id='popsize-label'></label>
-              </div>
-            </div>
-          </div>
-          <div class='param-item-container'>
-            <div class='param-item-label'>
-              <div>Mutation rate</div>
-              <!-- <img class='question-circle' src='../images/question-circle.svg' alt='?'> -->
-            </div>
-            <div class='param-input'>
-              <input id='mutation-slider' type='range' min='0' max='1' step='0.01' value='0.05'>
-              <div class='param-value-container'>
-                <label class='param-value' for='mutation-slider' id='mutation-label'></label>
-              </div>
-            </div>
-          </div>
-          <div class='param-item-container'>
-            <div class='param-item-label'>
-              <div>Crossover rate</div>
-              <!-- <img class='question-circle' src='../images/question-circle.svg' alt='?'> -->
-            </div>
-            <div class='param-input'>
-              <input id='cross-slider' type='range' min='0' max='1' step='0.01' value='0.3'>
-              <div class='param-value-container'>
-                <label class='param-value' for='cross-slider' id='cross-label'></label>
-              </div>
-            </div>
-          </div>
-          <div class='param-item-container'>
-            <div class='param-item-label'>
-              <div>Elitism</div>
-              <!-- <img class='question-circle' src='../images/question-circle.svg' alt='?'> -->
-            </div>
-            <div class='param-input'>
-              <input id='elitism-slider' type='range' min='0' max='1' step='0.01' value='0'>
-              <div class='param-value-container'>
-                <label class='param-value' for='elitism-slider' id='elitism-label'></label>
-              </div>
-            </div>
-          </div>
-          <!-- <div class='param-item-container'>
-            <div>Elitism</div>
-            <img class='question-circle' src='../images/question-circle.svg'>
-            <label class="switch">
-              <input type="checkbox" checked>
-              <span class="slider round"></span>
-            </label>
-          </div> -->
-          <p class='algo-options-explanation'>
-            An explanation of the algorithm parameters and implementation can be found 
-              <a href='https://github.com/abelchiao/genetic-algorithm-visualization#algorithm-implementation' target='_blank'>
-                here
-              </a>.
-          </p>
+        <div class='instructions'>
+          <h2 class='instructions-label'>Instructions</h2>
+          <ul>
+            <li>Press START to begin searching for shortest route between the default provided points.</li>
+            <li>Algorithm parameters can be changed using the interface to the left.</li>
+            <li>To run the algorithm against a custom set of points, click CLEAR and then click on the canvas to specify points.</li>
+            <li>The app must be RESET before algorithm parameters are altered for the changes to take effect.</li>
+          </ul>
         </div>
-        <div class='control-buttons-container'>
-          <button id='start'>Start/Resume</button>
-          <button id='stop'>Pause</button>
-          <button id='reset'>Reset</button>
-          <button id='clear'>Clear</button>
-        </div>
-      </div>
-      <div class='instructions'>
-        <h2 class='instructions-label'>Instructions</h2>
-        <ul>
-          <li>Press START to begin searching for shortest route between the default provided points.</li>
-          <li>Algorithm parameters can be changed using the interface to the left.</li>
-          <li>To run the algorithm against a custom set of points, click CLEAR and then click on the canvas to specify points.</li>
-          <li>The app must be RESET before algorithm parameters are altered for the changes to take effect.</li>
-        </ul>
       </div>
     </div>
 
