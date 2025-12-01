@@ -26,22 +26,29 @@ export const drawPaths = (ctx, individual) => {
   ctx.stroke();
 };
 
-export const clearCanvas = canvas => {
+const formatRouteCount = coordinates => {
+  if (coordinates.length < 2) return '0';
+  return Math.ceil(factorial(coordinates.length - 1) / 2).toLocaleString();
+};
+
+export const clearCanvas = canvasOrContext => {
+  const canvas = canvasOrContext.canvas || canvasOrContext;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
 export const startEvolution = (ctx, population) => {
-  setInterval(() => {
+  const evolveInt = setInterval(() => {
     population.createNextGen();
     let fittest = population.getFittest();
-    clearCanvas(canvas);
+    clearCanvas(ctx);
     drawPoints(ctx, fittest);
     drawPaths(ctx, fittest);
-  }, 1000)
+  }, 1000);
+  return evolveInt;
 }
 
-export const stopEvolution = () => {
+export const stopEvolution = evolveInt => {
   clearInterval(evolveInt);
 }
 
@@ -80,57 +87,49 @@ export const evolutionLoop = (ctx, fittestCtx, population) => {
 };
 
 export const addButtonListeners = (ctx, fittestCtx) => {
+  const canvas = ctx.canvas;
   const startBtn = document.getElementById('start');
   const stopBtn  = document.getElementById('stop');
   const resetBtn = document.getElementById('reset');
   const clearBtn = document.getElementById('clear');
-  let coordinates = [[407.8377416386715, 418.07147742662283],
-  [360.5979273594664, 440.3050970991086],
-  [309.2132865052777, 449.55456093008706],
-  [257.1855974331843, 445.1895332449387],
-  [208.060461173628, 427.507483466857],
-  [165.18567457957127, 397.71341406724946],
-  [131.48308350346423, 357.8377416386715],
-  [109.24946383097844, 310.59792735946644],
-  [100, 259.2132865052777],
-  [104.36502768514839, 207.1855974331843],
-  [122.04707746323004, 158.06046117362803],
-  [151.84114686283763, 115.18567457957127],
-  [191.71681929141556, 81.48308350346426],
-  [238.95663357062062, 59.24946383097847],
-  [290.3412744248092, 50],
-  [342.36896349690255, 54.36502768514836],
-  [391.49409975645904, 72.04707746323004],
-  [434.3688863505157, 101.84114686283758],
-  [468.0714774266228, 141.71681929141556],
-  [490.3050970991086, 188.9566335706206],
-  [499.55456093008706, 240.34127442480923],
-  [495.1895332449387, 292.3689634969027],
-  [477.507483466857, 341.49409975645904],
-  [447.71341406724946, 384.3688863505157]]
+  const randomPointsLabel = document.getElementById('random-points-label');
+  const randomPointsSlider = document.getElementById('random-points-slider');
+  const generateRandomBtn = document.getElementById('generate-random');
   let evolveInt = null;
   let population;
 
   let totalRoutesDisplay = document.getElementById('total-possible-routes')
-  document.getElementById('current-generation').innerHTML = 0
-  document.getElementById('individuals-screened').innerHTML = 0
-
-  const pxSize = 5;
-  const offset = pxSize / 2;
-  coordinates.forEach(point => {
-    ctx.fillRect(point[0] - offset, point[1] - offset, pxSize, pxSize);
-  });
-  totalRoutesDisplay.innerHTML = factorial(coordinates.length).toLocaleString();
-
-  const beginEvol = () => {
-    population = population ? population : new Population(popSize, crossProb, mutProb, elitismRate, ...coordinates)
-    evolveInt = setInterval(() => evolutionLoop(ctx, fittestCtx, population), 100);
-    document.getElementById('starting-distance').innerHTML = Math.floor(population.getFittest().distance);
-    document.getElementById('best-distance').innerHTML = Math.floor(population.fittestEver.distance)
-  }
+  const currentGenerationDisplay = document.getElementById('current-generation');
+  const individualsScreenedDisplay = document.getElementById('individuals-screened');
+  const startingDistanceDisplay = document.getElementById('starting-distance');
+  const bestDistanceDisplay = document.getElementById('best-distance');
 
   const stopEvol = () => {
-    clearInterval(evolveInt);
+    if (evolveInt) {
+      clearInterval(evolveInt);
+      evolveInt = null;
+    }
+  }
+
+  const resetRunStats = () => {
+    currentGenerationDisplay.innerHTML = 0;
+    individualsScreenedDisplay.innerHTML = 0;
+  };
+
+  const clearDistanceDisplays = () => {
+    startingDistanceDisplay.innerHTML = '';
+    bestDistanceDisplay.innerHTML = '';
+  };
+
+  const generateRandomCoords = num => {
+    let newCoords = [];
+    for (let i = 0; i < num; i++) {
+      newCoords.push([
+        Math.random() * canvas.width,
+        Math.random() * canvas.height
+      ])
+    }
+    return newCoords;
   }
 
   const resetPop = () => {
@@ -142,16 +141,39 @@ export const addButtonListeners = (ctx, fittestCtx) => {
     }
     const pxSize = 5;
     const offset = pxSize / 2;
-    population.coordinates.forEach(gene => {
-      ctx.fillRect(gene[0] - offset, gene[1] - offset, pxSize, pxSize);
+    coordinates.forEach(point => {
+      ctx.fillRect(point[0] - offset, point[1] - offset, pxSize, pxSize);
     });
-    document.getElementById('current-generation').innerHTML = 0
-    document.getElementById('individuals-screened').innerHTML = 0
-    // console.log('resetting')
+  }
+
+  const applyNewCoordinates = newCoords => {
+    stopEvol();
+    coordinates = newCoords;
+    population = null;
+    renderCoordinates();
+    updateTotalRoutes();
+    resetRunStats();
+    clearDistanceDisplays();
+  };
+
+  applyNewCoordinates(generateRandomCoords(15));
+
+  const beginEvol = () => {
+    population = population ? population : new Population(popSize, crossProb, mutProb, elitismRate, ...coordinates)
+    evolveInt = setInterval(() => evolutionLoop(ctx, fittestCtx, population), 100);
+    startingDistanceDisplay.innerHTML = Math.floor(population.getFittest().distance);
+    bestDistanceDisplay.innerHTML = Math.floor(population.fittestEver.distance)
+  }
+
+  const resetPop = () => {
+    stopEvol();
+    population = new Population(popSize, crossProb, mutProb, elitismRate, ...coordinates)
+    renderCoordinates();
+    resetRunStats();
   }
 
   const clearPop = () => {
-    clearInterval(evolveInt)
+    stopEvol()
     coordinates = [];
     population = null;
     clearCanvas(canvas);
@@ -159,11 +181,9 @@ export const addButtonListeners = (ctx, fittestCtx) => {
       fittestCtx.clearRect(0, 0, canvas.width, canvas.height)
     }
     // console.log('clearing');
-    totalRoutesDisplay.innerHTML = ''
-    document.getElementById('current-generation').innerHTML = 0
-    document.getElementById('individuals-screened').innerHTML = 0
-    document.getElementById('starting-distance').innerHTML = '';
-    document.getElementById('best-distance').innerHTML = '';
+    updateTotalRoutes();
+    resetRunStats();
+    clearDistanceDisplays();
   }
 
   const popSizeLabel = document.getElementById('popsize-label');
@@ -203,6 +223,17 @@ export const addButtonListeners = (ctx, fittestCtx) => {
     // console.log(elitismRate);
   };
 
+  let randomPoints = parseInt(randomPointsSlider.value, 10);
+  randomPointsLabel.innerHTML = `${randomPoints}`;
+  randomPointsSlider.oninput = () => {
+    randomPoints = parseInt(randomPointsSlider.value, 10);
+    randomPointsLabel.innerHTML = `${randomPoints}`;
+  };
+
+  generateRandomBtn.addEventListener('click', () => {
+    applyNewCoordinates(generateRandomCoords(randomPoints));
+  });
+
   canvas.addEventListener('click', function (event) {
     var rect = canvas.getBoundingClientRect();
     var x = event.clientX - rect.left;
@@ -213,7 +244,7 @@ export const addButtonListeners = (ctx, fittestCtx) => {
     const pxSize = 5;
     const offset = pxSize / 2;
     ctx.fillRect(x - offset, y - offset, pxSize, pxSize);
-    totalRoutesDisplay.innerHTML = Math.ceil(factorial(coordinates.length - 1)/2).toLocaleString();
+    updateTotalRoutes();
   }, false);
 
   // console.log(`popsize: ${popSize}, mutprob: ${mutProb}, crossprob: ${crossProb}`)
