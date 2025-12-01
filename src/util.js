@@ -26,30 +26,37 @@ export const drawPaths = (ctx, individual) => {
   ctx.stroke();
 };
 
-export const clearCanvas = canvas => {
+const formatRouteCount = coordinates => {
+  if (coordinates.length < 2) return '0';
+  return Math.ceil(factorial(coordinates.length - 1) / 2).toLocaleString();
+};
+
+export const clearCanvas = canvasOrContext => {
+  const canvas = canvasOrContext.canvas || canvasOrContext;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
 export const startEvolution = (ctx, population) => {
-  setInterval(() => {
+  const evolveInt = setInterval(() => {
     population.createNextGen();
     let fittest = population.getFittest();
-    clearCanvas(canvas);
+    clearCanvas(ctx);
     drawPoints(ctx, fittest);
     drawPaths(ctx, fittest);
-  }, 1000)
+  }, 1000);
+  return evolveInt;
 }
 
-export const stopEvolution = () => {
+export const stopEvolution = evolveInt => {
   clearInterval(evolveInt);
 }
 
 export const evolutionLoop = (ctx, fittestCtx, population) => {
   population.createNextGen();
   let currentGenFittest = population.getFittest();
-  clearCanvas(canvas);
-  fittestCtx.clearRect(0, 0, canvas.width, canvas.height)
+  clearCanvas(ctx);
+  clearCanvas(fittestCtx);
   // clearCanvas(fittestCanvas);
   drawPoints(ctx, currentGenFittest);
   drawPaths(ctx, currentGenFittest);
@@ -76,6 +83,7 @@ export const evolutionLoop = (ctx, fittestCtx, population) => {
 };
 
 export const addButtonListeners = (ctx, fittestCtx) => {
+  const canvas = ctx.canvas;
   const startBtn = document.getElementById('start');
   const stopBtn  = document.getElementById('stop');
   const resetBtn = document.getElementById('reset');

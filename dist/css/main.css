@@ -78,59 +78,6 @@ body {
 
 .below-canvases {
   display: flex;
-  justify-content: space-between;
-  max-width: 1200px;
-}
-
-.instructions {
-  display: flex;
-  flex-direction: column;
-  /* align-items: center; */
-  /* border: 1px solid purple; */
-  background: rgb(10,28,50);
-  border-radius: 4px;
-  padding: 10px;
-  border: 1px solid #fff;
-  margin: 10px;
-  font-size: 16px;
-  line-height: 20px;
-}
-
-.instructions-label {
-  font-size: 19px;
-  line-height: 28px;
-  font-weight: 400;
-}
-
-.instructions li {
-  margin-bottom: 5px;
-}
-
-.background {
-  display: flex;
-  flex-direction: column;
-  /* align-items: center; */
-  /* border: 1px solid purple; */
-  background: rgb(10,28,50);
-  border-radius: 4px;
-  padding: 10px;
-  border: 1px solid #fff;
-  margin: 10px;
-  font-size: 16px;
-  line-height: 20px;
-  max-width: 1180px;
-}
-
-.background p {
-  margin: 5px;
-}
-
-.background-title {
-  font-size: 19px;
-  /* line-height: 28px; */
-  font-weight: 400;
-}
-
-.background-paragraph {
-  margin-top: 10px;
+  justify-content: center;
+  margin-top: 15px;
 }
