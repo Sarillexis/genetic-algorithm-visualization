@@ -8,7 +8,7 @@
   <link rel="stylesheet" type="text/css" media="screen" href="css/reset.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="css/main.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="css/parameter-options.css" />
-  <script src='./main.js'></script>
+  <script type="module" src='../src/index.js'></script>
   <title>Genetic Algorithm Visualizer</title>
 </head>
 <body>
@@ -103,6 +103,18 @@
               <div class='param-value-container'>
                 <label class='param-value' for='elitism-slider' id='elitism-label'></label>
               </div>
+            </div>
+          </div>
+          <div class='param-item-container'>
+            <div class='param-item-label'>
+              <div>Random points</div>
+            </div>
+            <div class='param-input'>
+              <input id='random-points-slider' type='range' min='10' max='100' step='1' value='15'>
+              <div class='param-value-container'>
+                <label class='param-value' for='random-points-slider' id='random-points-label'></label>
+              </div>
+              <button id='generate-random'>Generate random</button>
             </div>
           </div>
           <!-- <div class='param-item-container'>
