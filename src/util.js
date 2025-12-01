@@ -9,11 +9,6 @@ export const factorial = num => {
   return result;
 };
 
-export const formatRouteCount = coordinates => {
-  if (coordinates.length < 2) return '0';
-  return Math.ceil(factorial(coordinates.length - 1) / 2).toLocaleString();
-};
-
 export const shuffleCoordinates = coordinates => {
   const shuffled = coordinates.slice();
   for (let i = shuffled.length - 1; i > 0; i -= 1) {
@@ -104,10 +99,6 @@ export const renderFittestPreview = (fittestCtx, individual) => {
   });
   fittestCtx.closePath();
   fittestCtx.stroke();
-};
-
-export const renderTotalRoutes = (coordinates, targetEl) => {
-  targetEl.textContent = formatRouteCount(coordinates);
 };
 
 export const generateRandomCoords = (num, canvas) => {

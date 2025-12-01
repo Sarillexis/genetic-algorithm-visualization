@@ -18,27 +18,81 @@ class Individual {
   }
 
   mutate() {
+    let mutated = false;
+
     if (Math.random() < this.mutProb) {
-      const len = this.chromosome.length;
+      const mutationStrategies = [
+        this.reverseSegmentMutation.bind(this),
+        this.twoOptMutation.bind(this)
+      ];
 
-      let idx1 = Math.floor(Math.random() * len);
-      let idx2 = Math.floor(Math.random() * len);
-      while (idx2 === idx1) {
-        idx2 = Math.floor(Math.random() * len);
-      }
-
-      if (idx1 > idx2) [idx1, idx2] = [idx2, idx1];
-
-      while (idx1 < idx2) {
-        [this.chromosome[idx1], this.chromosome[idx2]] =
-          [this.chromosome[idx2], this.chromosome[idx1]];
-        idx1 += 1;
-        idx2 -= 1;
+      while (mutationStrategies.length && !mutated) {
+        const strategyIdx = Math.floor(Math.random() * mutationStrategies.length);
+        const [strategy] = mutationStrategies.splice(strategyIdx, 1);
+        mutated = strategy();
       }
     }
 
-    this.calculateDistance();
+    if (mutated) this.calculateDistance();
     return this.chromosome;
+  }
+
+  reverseSegmentMutation() {
+    const len = this.chromosome.length;
+    if (len < 2) return false;
+
+    let idx1 = Math.floor(Math.random() * len);
+    let idx2 = Math.floor(Math.random() * len);
+    while (idx2 === idx1) {
+      idx2 = Math.floor(Math.random() * len);
+    }
+
+    if (idx1 > idx2) [idx1, idx2] = [idx2, idx1];
+
+    for (let start = idx1, end = idx2; start < end; start += 1, end -= 1) {
+      [this.chromosome[start], this.chromosome[end]] =
+        [this.chromosome[end], this.chromosome[start]];
+    }
+
+    return true;
+  }
+
+  twoOptMutation() {
+    const len = this.chromosome.length;
+    if (len < 4) return false;
+
+    let idx1 = Math.floor(Math.random() * len);
+    let idx2 = Math.floor(Math.random() * len);
+    while (
+      idx2 === idx1 ||
+      Math.abs(idx2 - idx1) < 2 ||
+      Math.abs(idx2 - idx1) === len - 1
+    ) {
+      idx2 = Math.floor(Math.random() * len);
+    }
+
+    if (idx1 > idx2) [idx1, idx2] = [idx2, idx1];
+
+    const beforeIdx1 = (idx1 - 1 + len) % len;
+    const afterIdx2 = (idx2 + 1) % len;
+
+    const currentDistance =
+      this.distanceCalculator(this.chromosome[beforeIdx1], this.chromosome[idx1]) +
+      this.distanceCalculator(this.chromosome[idx2], this.chromosome[afterIdx2]);
+
+    const newDistance =
+      this.distanceCalculator(this.chromosome[beforeIdx1], this.chromosome[idx2]) +
+      this.distanceCalculator(this.chromosome[idx1], this.chromosome[afterIdx2]);
+
+    if (newDistance < currentDistance) {
+      for (let start = idx1, end = idx2; start < end; start += 1, end -= 1) {
+        [this.chromosome[start], this.chromosome[end]] =
+          [this.chromosome[end], this.chromosome[start]];
+      }
+      return true;
+    }
+
+    return false;
   }
 
   mate(crossProb, otherInd) {
@@ -90,7 +144,7 @@ class Individual {
       const children = [];
       childChromosomes.forEach(chromosome => {
         const child = new Individual(this.distanceCalculator, this.mutProb, ...chromosome);
-        child.mutate(this.mutProb);
+        child.mutate();
         children.push(child);
       });
       return children;
@@ -98,8 +152,8 @@ class Individual {
 
     const firstParentClone = new Individual(this.distanceCalculator, this.mutProb, ...this.chromosome);
     const secondParentClone = new Individual(this.distanceCalculator, this.mutProb, ...otherInd.chromosome);
-    firstParentClone.mutate(this.mutProb);
-    secondParentClone.mutate(this.mutProb);
+    firstParentClone.mutate();
+    secondParentClone.mutate();
     return [firstParentClone, secondParentClone];
   }
 }

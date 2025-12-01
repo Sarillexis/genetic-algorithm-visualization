@@ -20,7 +20,7 @@
 
     <div class='main-canvas-container'>
       <h2 class='canvas-label'>Shortest route in current generation</h2>
-      <canvas width=600 height=500 id="canvas"></canvas>
+      <canvas width=1200 height=500 id="canvas"></canvas>
     </div>
 
     <div class='controls-stats'>
@@ -81,7 +81,7 @@
                 <div>Random points</div>
               </div>
               <div class='param-input'>
-                <input id='random-points-slider' type='range' min='3' max='50' step='1' value='15'>
+                <input id='random-points-slider' type='range' min='10' max='100' step='1' value='15'>
                 <div class='param-value-container'>
                   <label class='param-value' for='random-points-slider' id='random-points-label'></label>
                 </div>
@@ -120,10 +120,6 @@
           <div class='run-metric-item'>
             <div class='run-metric-label'>Shortest distance found:</div>
             <div id='best-distance'></div>
-          </div>
-          <div class='run-metric-item'>
-            <div class='run-metric-label'>Number of possible routes:</div>
-            <div id='total-possible-routes'></div>
           </div>
           <div class='run-metric-item'>
             <div class='run-metric-label'>Current generation:</div>

@@ -4,8 +4,7 @@ import {
   drawIndividual,
   generateRandomCoords,
   renderFittestPreview,
-  renderRunStats,
-  renderTotalRoutes
+  renderRunStats
 } from './util';
 
 const DEFAULT_RANDOM_POINTS = 15;
@@ -30,7 +29,6 @@ export const initializeApp = (ctx, fittestCtx) => {
     crossSlider: document.getElementById('cross-slider'),
     elitismLabel: document.getElementById('elitism-label'),
     elitismSlider: document.getElementById('elitism-slider'),
-    totalRoutesDisplay: document.getElementById('total-possible-routes'),
     currentGenerationDisplay: document.getElementById('current-generation'),
     individualsScreenedDisplay: document.getElementById('individuals-screened'),
     startingDistanceDisplay: document.getElementById('starting-distance'),
@@ -61,15 +59,12 @@ export const initializeApp = (ctx, fittestCtx) => {
     controls.bestDistanceDisplay.textContent = '';
   };
 
-  const updateTotalRoutes = () => renderTotalRoutes(state.coordinates, controls.totalRoutesDisplay);
-
   const applyNewCoordinates = newCoords => {
     state.coordinates = newCoords;
     state.population = null;
     stopEvolution();
     renderCoordinates();
     resetRunStats();
-    updateTotalRoutes();
     renderFittestPreview(fittestCtx, null);
   };
 
@@ -137,7 +132,6 @@ export const initializeApp = (ctx, fittestCtx) => {
     state.population = null;
     clearCanvas(canvas);
     renderFittestPreview(fittestCtx, null);
-    updateTotalRoutes();
     resetRunStats();
   };
 
@@ -182,7 +176,6 @@ export const initializeApp = (ctx, fittestCtx) => {
     const y = event.clientY - rect.top;
     state.coordinates.push([x, y]);
     renderCoordinates();
-    updateTotalRoutes();
     state.population = null;
   });
 

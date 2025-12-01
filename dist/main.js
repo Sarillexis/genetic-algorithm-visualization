@@ -10,11 +10,6 @@
     return result;
   };
 
-  const formatRouteCount = coordinates => {
-    if (coordinates.length < 2) return '0';
-    return Math.ceil(factorial(coordinates.length - 1) / 2).toLocaleString();
-  };
-
   const shuffleCoordinates = coordinates => {
     const shuffled = coordinates.slice();
     for (let i = shuffled.length - 1; i > 0; i -= 1) {
@@ -107,10 +102,6 @@
     fittestCtx.stroke();
   };
 
-  const renderTotalRoutes = (coordinates, targetEl) => {
-    targetEl.textContent = formatRouteCount(coordinates);
-  };
-
   const generateRandomCoords = (num, canvas) => {
     const newCoords = [];
     for (let i = 0; i < num; i += 1) {
@@ -142,27 +133,81 @@
     }
 
     mutate() {
+      let mutated = false;
+
       if (Math.random() < this.mutProb) {
-        const len = this.chromosome.length;
+        const mutationStrategies = [
+          this.reverseSegmentMutation.bind(this),
+          this.twoOptMutation.bind(this)
+        ];
 
-        let idx1 = Math.floor(Math.random() * len);
-        let idx2 = Math.floor(Math.random() * len);
-        while (idx2 === idx1) {
-          idx2 = Math.floor(Math.random() * len);
-        }
-
-        if (idx1 > idx2) [idx1, idx2] = [idx2, idx1];
-
-        while (idx1 < idx2) {
-          [this.chromosome[idx1], this.chromosome[idx2]] =
-            [this.chromosome[idx2], this.chromosome[idx1]];
-          idx1 += 1;
-          idx2 -= 1;
+        while (mutationStrategies.length && !mutated) {
+          const strategyIdx = Math.floor(Math.random() * mutationStrategies.length);
+          const [strategy] = mutationStrategies.splice(strategyIdx, 1);
+          mutated = strategy();
         }
       }
 
-      this.calculateDistance();
+      if (mutated) this.calculateDistance();
       return this.chromosome;
+    }
+
+    reverseSegmentMutation() {
+      const len = this.chromosome.length;
+      if (len < 2) return false;
+
+      let idx1 = Math.floor(Math.random() * len);
+      let idx2 = Math.floor(Math.random() * len);
+      while (idx2 === idx1) {
+        idx2 = Math.floor(Math.random() * len);
+      }
+
+      if (idx1 > idx2) [idx1, idx2] = [idx2, idx1];
+
+      for (let start = idx1, end = idx2; start < end; start += 1, end -= 1) {
+        [this.chromosome[start], this.chromosome[end]] =
+          [this.chromosome[end], this.chromosome[start]];
+      }
+
+      return true;
+    }
+
+    twoOptMutation() {
+      const len = this.chromosome.length;
+      if (len < 4) return false;
+
+      let idx1 = Math.floor(Math.random() * len);
+      let idx2 = Math.floor(Math.random() * len);
+      while (
+        idx2 === idx1 ||
+        Math.abs(idx2 - idx1) < 2 ||
+        Math.abs(idx2 - idx1) === len - 1
+      ) {
+        idx2 = Math.floor(Math.random() * len);
+      }
+
+      if (idx1 > idx2) [idx1, idx2] = [idx2, idx1];
+
+      const beforeIdx1 = (idx1 - 1 + len) % len;
+      const afterIdx2 = (idx2 + 1) % len;
+
+      const currentDistance =
+        this.distanceCalculator(this.chromosome[beforeIdx1], this.chromosome[idx1]) +
+        this.distanceCalculator(this.chromosome[idx2], this.chromosome[afterIdx2]);
+
+      const newDistance =
+        this.distanceCalculator(this.chromosome[beforeIdx1], this.chromosome[idx2]) +
+        this.distanceCalculator(this.chromosome[idx1], this.chromosome[afterIdx2]);
+
+      if (newDistance < currentDistance) {
+        for (let start = idx1, end = idx2; start < end; start += 1, end -= 1) {
+          [this.chromosome[start], this.chromosome[end]] =
+            [this.chromosome[end], this.chromosome[start]];
+        }
+        return true;
+      }
+
+      return false;
     }
 
     mate(crossProb, otherInd) {
@@ -208,25 +253,25 @@
             }
           });
 
-          childChromosomes.push(childChromosome);
-        }
-
-        const children = [];
-        childChromosomes.forEach(chromosome => {
-          const child = new Individual(this.distanceCalculator, this.mutProb, ...chromosome);
-          child.mutate(this.mutProb);
-          children.push(child);
-        });
-        return children;
+        childChromosomes.push(childChromosome);
       }
 
-      const firstParentClone = new Individual(this.distanceCalculator, this.mutProb, ...this.chromosome);
-      const secondParentClone = new Individual(this.distanceCalculator, this.mutProb, ...otherInd.chromosome);
-      firstParentClone.mutate(this.mutProb);
-      secondParentClone.mutate(this.mutProb);
-      return [firstParentClone, secondParentClone];
+      const children = [];
+      childChromosomes.forEach(chromosome => {
+        const child = new Individual(this.distanceCalculator, this.mutProb, ...chromosome);
+        child.mutate();
+        children.push(child);
+      });
+      return children;
     }
+
+    const firstParentClone = new Individual(this.distanceCalculator, this.mutProb, ...this.chromosome);
+    const secondParentClone = new Individual(this.distanceCalculator, this.mutProb, ...otherInd.chromosome);
+    firstParentClone.mutate();
+    secondParentClone.mutate();
+    return [firstParentClone, secondParentClone];
   }
+}
 
   class Population {
     constructor(popSize, crossProb, mutProb, elitismRate, ...coordinates) {
@@ -336,7 +381,6 @@
       crossSlider: document.getElementById('cross-slider'),
       elitismLabel: document.getElementById('elitism-label'),
       elitismSlider: document.getElementById('elitism-slider'),
-      totalRoutesDisplay: document.getElementById('total-possible-routes'),
       currentGenerationDisplay: document.getElementById('current-generation'),
       individualsScreenedDisplay: document.getElementById('individuals-screened'),
       startingDistanceDisplay: document.getElementById('starting-distance'),
@@ -367,15 +411,12 @@
       controls.bestDistanceDisplay.textContent = '';
     };
 
-    const updateTotalRoutes = () => renderTotalRoutes(state.coordinates, controls.totalRoutesDisplay);
-
     const applyNewCoordinates = newCoords => {
       state.coordinates = newCoords;
       state.population = null;
       stopEvolution();
       renderCoordinates();
       resetRunStats();
-      updateTotalRoutes();
       renderFittestPreview(fittestCtx, null);
     };
 
@@ -443,7 +484,6 @@
       state.population = null;
       clearCanvas(canvas);
       renderFittestPreview(fittestCtx, null);
-      updateTotalRoutes();
       resetRunStats();
     };
 
@@ -488,7 +528,6 @@
       const y = event.clientY - rect.top;
       state.coordinates.push([x, y]);
       renderCoordinates();
-      updateTotalRoutes();
       state.population = null;
     });
 
