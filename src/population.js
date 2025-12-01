@@ -24,6 +24,8 @@ class Population {
     }
     // console.log('CURRENT POPULATION: ', this.currentGen)
     this.fittestEver = this.getFittest();
+
+  }
   
   selectParentTournament(k = 3) {
     // pick the best out of k random individuals
